@@ -63,18 +63,19 @@ resource "tls_locally_signed_cert" "mtls-intermediate-ca" {
 
 resource "helm_release" "linkerd2-cni" {
   name       = "linkerd2-cni"
+  namespace = "linkerd"
   repository = "https://helm.linkerd.io/stable"
   chart      = "linkerd2-cni"
   version    = var.linkerd2_cni_version
 }
 
-resource "helm_release" "linkerd2" {
+resource "helm_release" "linkerd-crds" {
   depends_on = [
     helm_release.linkerd2-cni
   ]
-  name       = "linkerd"
+  name       = "linkerd-crds"
   repository = "https://helm.linkerd.io/stable"
-  chart      = "linkerd2"
+  chart      = "linkerd-crds"
   version    = var.linkerd2_version
 
   set {
@@ -99,12 +100,38 @@ resource "helm_release" "linkerd2" {
   }
 }
 
-# resource "helm_release" "linkerd-viz" {
-#   depends_on = [
-#     helm_release.linkerd2
-#   ]
-#   name       = "linkerd-viz"
-#   repository = "https://helm.linkerd.io/stable"
-#   chart      = "linkerd-viz"
-#   version    = var.linkerd2_viz_version
-# }
+resource "helm_release" "linkerd-control-plane" {
+  depends_on = [
+    helm_release.linkerd2
+  ]
+  name       = "linkerd-control-plane"
+  namespace = "linkerd"
+  repository = "https://helm.linkerd.io/stable"
+  chart      = "linkerd-control-plane"
+  version    = var.linkerd2_control_plane_version
+
+  set {
+    name  = "ha"
+    value = true
+  }
+  set {
+    name  = "cniEnabled"
+    value = true
+  }
+  set {
+    name  = "identityTrustAnchorsPEM"
+    value = tls_self_signed_cert.mtls-root-ca.cert_pem
+  }
+  set {
+    name  = "identity.issuer.tls.crtPEM"
+    value = tls_locally_signed_cert.mtls-intermediate-ca.cert_pem
+  }
+  set {
+    name  = "identity.issuer.tls.keyPEM"
+    value = tls_private_key.mtls-intermediate-ca.private_key_pem
+  }
+  set {
+    name  = "identity.issuer.crtExpiry"
+    value = tls_locally_signed_cert.mtls-intermediate-ca.validity_end_time
+  }
+}
