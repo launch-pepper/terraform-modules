@@ -61,12 +61,18 @@ resource "tls_locally_signed_cert" "mtls-intermediate-ca" {
   validity_period_hours = 8760
 }
 
+resource "kubernetes_namespace" "linkerd" {
+  metadata {
+    name = var.linkerd_k8s_namespace
+  }
+}
+
 resource "helm_release" "linkerd2-cni" {
   name       = "linkerd2-cni"
-  namespace = "linkerd"
+  namespace = var.linkerd_k8s_namespace
   repository = "https://helm.linkerd.io/stable"
   chart      = "linkerd2-cni"
-  version    = var.linkerd2_cni_version
+  version    = var.linkerd_cni_version
 }
 
 resource "helm_release" "linkerd-crds" {
@@ -74,9 +80,10 @@ resource "helm_release" "linkerd-crds" {
     helm_release.linkerd2-cni
   ]
   name       = "linkerd-crds"
+  namespace = var.linkerd_k8s_namespace
   repository = "https://helm.linkerd.io/stable"
   chart      = "linkerd-crds"
-  version    = var.linkerd2_version
+  version    = var.linkerd_crds_version
 
   set {
     name  = "cniEnabled"
@@ -102,13 +109,13 @@ resource "helm_release" "linkerd-crds" {
 
 resource "helm_release" "linkerd-control-plane" {
   depends_on = [
-    helm_release.linkerd2
+    helm_release.linkerd-crds
   ]
   name       = "linkerd-control-plane"
-  namespace = "linkerd"
+  namespace = var.linkerd_k8s_namespace
   repository = "https://helm.linkerd.io/stable"
   chart      = "linkerd-control-plane"
-  version    = var.linkerd2_control_plane_version
+  version    = var.linkerd_control_plane_version
 
   set {
     name  = "ha"
