@@ -45,26 +45,12 @@ resource "helm_release" "linkerd-crds" {
     name  = "cniEnabled"
     value = true
   }
-  set {
-    name  = "identityTrustAnchorsPEM"
-    value = var.mtls_root_ca_cert
-  }
-  set {
-    name  = "identity.issuer.tls.crtPEM"
-    value = var.mtls_intermediate_ca_cert
-  }
-  set {
-    name  = "identity.issuer.tls.keyPEM"
-    value = var.mtls_intermediate_ca_private_key
-  }
-  set {
-    name  = "identity.issuer.crtExpiry"
-    value = var.mtls_cert_expiry
-  }
+
 }
 
 resource "helm_release" "linkerd-control-plane" {
   depends_on = [
+    helm_release.linkerd2-cni,
     helm_release.linkerd-crds
   ]
   name       = "linkerd-control-plane"
