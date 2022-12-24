@@ -5,6 +5,6 @@ variable "cloudflare_api_token" {
 }
 
 variable "external_dns_version" {
-  type = string
-  default = "" 
+  type    = string
+  default = ""
 }

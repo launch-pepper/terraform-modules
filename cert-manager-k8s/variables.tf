@@ -1,9 +1,9 @@
 variable "cert_manager_version" {
-  type = string
+  type    = string
   default = ""
 }
 
 variable "install_crds" {
-  type = bool
+  type    = bool
   default = true
 }

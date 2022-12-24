@@ -3,11 +3,11 @@
 terraform {
   required_providers {
     helm = {
-      source = "hashicorp/helm"
+      source  = "hashicorp/helm"
       version = "~> 2"
     }
     kubernetes = {
-      source = "hashicorp/kubernetes"
+      source  = "hashicorp/kubernetes"
       version = "~> 2"
     }
   }
@@ -24,7 +24,7 @@ resource "kubernetes_namespace" "linkerd" {
 
 resource "helm_release" "linkerd2-cni" {
   name       = "linkerd2-cni"
-  namespace = var.linkerd_k8s_namespace
+  namespace  = var.linkerd_k8s_namespace
   repository = "https://helm.linkerd.io/stable"
   chart      = "linkerd2-cni"
   version    = var.linkerd_cni_version
@@ -38,7 +38,7 @@ resource "helm_release" "linkerd-crds" {
     helm_release.linkerd2-cni
   ]
   name       = "linkerd-crds"
-  namespace = var.linkerd_k8s_namespace
+  namespace  = var.linkerd_k8s_namespace
   repository = "https://helm.linkerd.io/stable"
   chart      = "linkerd-crds"
   version    = var.linkerd_crds_version
@@ -56,7 +56,7 @@ resource "helm_release" "linkerd-control-plane" {
     helm_release.linkerd-crds
   ]
   name       = "linkerd-control-plane"
-  namespace = var.linkerd_k8s_namespace
+  namespace  = var.linkerd_k8s_namespace
   repository = "https://helm.linkerd.io/stable"
   chart      = "linkerd-control-plane"
   version    = var.linkerd_control_plane_version
