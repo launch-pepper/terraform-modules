@@ -1,10 +1,11 @@
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = "monitoring"
+    annotations = {
+      "linkerd.io/inject" = "enabled"
+    }
   }
-  annotations = {
-    "linkerd.io/inject" = "enabled"
-  }
+
 }
 
 resource "helm_release" "kube-prometheus-stack" {
